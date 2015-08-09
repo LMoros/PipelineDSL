@@ -1,5 +1,0 @@
-C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\PipelineTest\bin\Debug\PipelineTest.dll
-C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\PipelineTest\bin\Debug\PipelineTest.pdb
-C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\PipelineTest\obj\Debug\PipelineTest.csprojResolveAssemblyReference.cache
-C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\PipelineTest\obj\Debug\PipelineTest.dll
-C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\PipelineTest\obj\Debug\PipelineTest.pdb

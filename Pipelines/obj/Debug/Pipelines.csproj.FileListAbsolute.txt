@@ -1,7 +1,0 @@
-C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\Pipelines\bin\Debug\Pipelines.dll
-C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\Pipelines\bin\Debug\Pipelines.pdb
-C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\Pipelines\bin\Debug\PipelineDSL.dll
-C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\Pipelines\bin\Debug\PipelineDSL.pdb
-C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\Pipelines\obj\Debug\Pipelines.csprojResolveAssemblyReference.cache
-C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\Pipelines\obj\Debug\Pipelines.dll
-C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\Pipelines\obj\Debug\Pipelines.pdb
