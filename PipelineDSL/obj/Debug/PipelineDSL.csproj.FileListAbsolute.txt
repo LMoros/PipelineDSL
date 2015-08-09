@@ -1,0 +1,5 @@
+C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\PipelineDSL\bin\Debug\PipelineDSL.dll
+C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\PipelineDSL\bin\Debug\PipelineDSL.pdb
+C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\PipelineDSL\obj\Debug\PipelineDSL.dll
+C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\PipelineDSL\obj\Debug\PipelineDSL.pdb
+C:\Users\Luis\Documents\Visual Studio 2013\Projects\PipelineTest\PipelineDSL\obj\Debug\PipelineDSL.csprojResolveAssemblyReference.cache
