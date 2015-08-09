@@ -41,7 +41,7 @@ namespace Pipelines
         {
             return SetPipelineAs
                     .With( intension)
-                    .asynchronously(_Authenticate.Including( Logging))
+                    .Asynchronously(_Authenticate.Including( Logging))
                     .AndThen(_Authorize.Including( Logging).Retrying( up_to: 2.Times()))
                     .AndThen(_Process.Including( Logging).Retrying( up_to: 5.Times()))
                     .AtLast(_AdaptOutput);

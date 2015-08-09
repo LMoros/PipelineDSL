@@ -16,7 +16,7 @@ namespace PipelineDSL
             return pipe.Do(filter);
         }
 
-        public static Task<Pipe<R>> asynchronously<T, R>(this Pipe<T> pipe, Func<T, R> filter)
+        public static Task<Pipe<R>> Asynchronously<T, R>(this Pipe<T> pipe, Func<T, R> filter)
         {
             return Task<Pipe<R>>.Run(() => pipe.Do(filter));
         }
