@@ -16,9 +16,15 @@ namespace PipelineDSL
             return pipe.Do(filter);
         }
 
-        public static Task<Pipe<R>> Asynchronously<T, R>(this Pipe<T> pipe, Func<T, R> filter)
+        public static async Task<Pipe<R>> AndThenAsynchronously<T, R>(this Task<Pipe<T>> asyncPipedTask, Func<T, R> filter)
         {
-            return Task<Pipe<R>>.Run(() => pipe.Do(filter));
+            var pipe = await asyncPipedTask;
+            return await Task<Pipe<R>>.Run(() => pipe.Do(filter)); 
+        }
+
+        public static async Task<Pipe<R>> Asynchronously<T, R>(this Pipe<T> pipe, Func<T, R> filter)
+        {
+            return await Task<Pipe<R>>.Run(() => pipe.Do(filter));
         }
 
         public static Pipe<R> Do<T, R>(this Pipe<T> pipe, Func<T, R> filter)
@@ -56,7 +62,7 @@ namespace PipelineDSL
                 case PipeValueType.None:
                     return finalFilter.Do();
 
-                case PipeValueType.Exception:
+                case PipeValueType.Value:
                     return finalFilter.Do((T)pipe);
 
                 default:
@@ -69,9 +75,14 @@ namespace PipelineDSL
             return x => outter(inner(x));
         }
 
-        public static Func<A, C> Including<A, B, C>(this Func<A, B> inner, Func<B, C> outter)
+        public static Func<A, B> Including<A, B>(this Func<A, B> inner, Action<B> outter)
         {
-            return outter.Compose(inner);
+            return x =>
+            {
+                var result = inner(x);
+                outter(result);
+                return result;
+            };
         }
 
         public static Func<T, R> Retrying<T, R>(this Func<T, R> fun, NumberTimes up_to)

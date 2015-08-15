@@ -4,30 +4,26 @@ using PipelineDSL;
 
 namespace Pipelines
 {
-    public class StandardPipeline<T,R>
+    public class StandardPipeline<TIntention,TResult,TOuput>
     {
         #region Contructor and Private Members
-        private readonly ILog<string, string> _Logging;
-        private readonly Func<T, IAmAuthenticated<T>> _Authenticate;
-        private readonly Func<IAmAuthenticated<T>,
-                                IAmAuthorized<
-                                    IAmAuthenticated<T>>> _Authorize;
-        private readonly Func<IAmAuthorized<IAmAuthenticated<T>>,
-                                IAmProcessed<
-                                    IAmAuthorized<
-                                        IAmAuthenticated<T>>>> _Process;
+        private readonly ILog _Logging;
 
-        private readonly ITranslateToWebApi<
-                            IAmProcessed<
-                                IAmAuthorized<
-                                    IAmAuthenticated<T>>>, R> _AdaptOutput;
+        private readonly Func<TIntention, IAmAuthenticated<TIntention>> _Authenticate;
+
+        private readonly Func<IAmAuthenticated<TIntention>,
+                                IAmAuthorized<IAmAuthenticated<TIntention>>> _Authorize;
+
+        private readonly Func<IAmAuthorized<IAmAuthenticated<TIntention>>,TResult> _Process;
+
+        private readonly ITranslateToWebApi<TResult, TOuput> _AdaptOutput;
 
         public StandardPipeline(
-            ILog<string, string> logging,
-            IAuthenticate<T> authentication,
-            IAuthorize<T> authorization,
-            IProcess<T> process,
-            ITranslateToWebApi<IAmProcessed<IAmAuthorized<IAmAuthenticated<T>>>, R> adapter) 
+            ILog logging,
+            IAuthenticate<TIntention> authentication,
+            IAuthorize<TIntention> authorization,
+            IProcess<TIntention,TResult> process,
+            ITranslateToWebApi<TResult, TOuput> adapter) 
         {
             _Logging = logging;
             _Authenticate = authentication.Authenticate;
@@ -37,32 +33,29 @@ namespace Pipelines
         }
         #endregion
 
-        public Task<R> Execute(T intension)
+        public Task<TOuput> Execute(TIntention intension)
         {
             return SetPipelineAs
                     .With( intension)
                     .Asynchronously(_Authenticate.Including( Logging))
-                    .AndThen(_Authorize.Including( Logging).Retrying( up_to: 2.Times()))
-                    .AndThen(_Process.Including( Logging).Retrying( up_to: 5.Times()))
+                    .AndThenAsynchronously(_Authorize.Including(Logging).Retrying(up_to: 2.Times()))
+                    .AndThen(_Process.Including(Logging).Retrying(up_to: 5.Times()))
                     .AtLast(_AdaptOutput);
         }
 
         #region Logging overloads
-        private IAmAuthenticated<T> Logging( IAmAuthenticated<T> authenticatedTransfer)
+        private void Logging( IAmAuthenticated<TIntention> authenticatedTransfer)
         {
             _Logging.Do("Intension was authenticated");
-            return authenticatedTransfer;
         }
 
-        private IAmAuthorized<IAmAuthenticated<T>> Logging(IAmAuthorized<IAmAuthenticated<T>> authenticatedTransfer)
+        private void Logging(IAmAuthorized<IAmAuthenticated<TIntention>> authenticatedTransfer)
         {
             _Logging.Do("Intension was authorized");
-            return authenticatedTransfer;
         }
-        private IAmProcessed<IAmAuthorized<IAmAuthenticated<T>>> Logging(IAmProcessed<IAmAuthorized<IAmAuthenticated<T>>> authenticatedTransfer)
+        private void Logging(TResult authenticatedTransfer)
         {
             _Logging.Do("Intension was processed");
-            return authenticatedTransfer;
         }
         #endregion
     }

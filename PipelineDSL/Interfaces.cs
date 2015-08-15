@@ -4,7 +4,7 @@ namespace PipelineDSL
 {
     public interface IAmAuthenticated<T> {}
     public interface IAmAuthorized<T> {}
-    public interface IAmProcessed<T> { }
+    public interface IAmProcessed<T> {}
     public interface IAuthenticate<T> 
     {
         IAmAuthenticated<T> Authenticate(T intention);
@@ -14,13 +14,13 @@ namespace PipelineDSL
     {
         IAmAuthorized<IAmAuthenticated<T>> Authorize(IAmAuthenticated<T> authenticatedIntention);
     }
-    public interface IProcess<T>
+    public interface IProcess<T,R>
     {
-        IAmProcessed<IAmAuthorized<IAmAuthenticated<T>>> Process(IAmAuthorized<IAmAuthenticated<T>> authorizedIntention);
+        R Process(IAmAuthorized<IAmAuthenticated<T>> authorizedIntention);
     }
-    public interface ILog<T, R>
+    public interface ILog
     {
-        R Do(T intention);
+        void Do<T>(T intention);
     }
 
     public interface IAmTheFinalPipelineFilter<T, R>
