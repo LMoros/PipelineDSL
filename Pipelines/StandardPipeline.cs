@@ -14,7 +14,7 @@ namespace Pipelines
         private readonly Func<IAmAuthenticated<TIntention>,
                                 IAmAuthorized<IAmAuthenticated<TIntention>>> _Authorize;
 
-        private readonly Func<IAmAuthorized<IAmAuthenticated<TIntention>>,TResult> _Process;
+        private readonly Func<IAmAuthorized<IAmAuthenticated<TIntention>>,Task<TResult>> _Process;
 
         private readonly ITranslateToWebApi<TResult, TOuput> _AdaptOutput;
 
@@ -22,7 +22,7 @@ namespace Pipelines
             ILog logging,
             IAuthenticate<TIntention> authentication,
             IAuthorize<TIntention> authorization,
-            IProcess<TIntention,TResult> process,
+            IProcess<TIntention,Task<TResult>> process,
             ITranslateToWebApi<TResult, TOuput> adapter) 
         {
             _Logging = logging;
@@ -37,10 +37,10 @@ namespace Pipelines
         {
             return SetPipelineAs
                     .With( intension)
-                    .Asynchronously(_Authenticate.Including( Logging))
-                    .AndThenAsynchronously(_Authorize.Including(Logging).Retrying(up_to: 2.Times()))
+                    .Do(_Authenticate.Including( Logging))
+                    .AndThen(_Authorize.Including(Logging).Retrying(up_to: 2.Times()))
                     .AndThen(_Process.Including(Logging).Retrying(up_to: 5.Times()))
-                    .AtLast(_AdaptOutput);
+                    .Finally(_AdaptOutput);
         }
 
         #region Logging overloads

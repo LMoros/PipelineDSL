@@ -10,21 +10,43 @@ namespace PipelineDSL
             return pipe.Do(filter);
         }
 
-        public static async Task<Pipe<R>> AndThen<T, R>(this Task<Pipe<T>> asyncPipedTask, Func<T, R> filter)
+        public static async Task<Pipe<R>> AndThen<T, R>(this Pipe<T> pipe, Func<T, Task<R>> filter)
         {
-            var pipe = await asyncPipedTask;
-            return pipe.Do(filter);
+            return await pipe.Do(filter);
         }
 
-        public static async Task<Pipe<R>> AndThenAsynchronously<T, R>(this Task<Pipe<T>> asyncPipedTask, Func<T, R> filter)
+        public static async Task<Pipe<R>> AndThen<T, R>(this Task<Pipe<T>> pipe, Func<T, Task<R>> filter)
         {
-            var pipe = await asyncPipedTask;
-            return await Task<Pipe<R>>.Run(() => pipe.Do(filter)); 
+            return await pipe.Do(filter); 
         }
 
-        public static async Task<Pipe<R>> Asynchronously<T, R>(this Pipe<T> pipe, Func<T, R> filter)
+        public static async Task<Pipe<R>> Do<T, R>(this Task<Pipe<T>> pipe, Func<T, Task<R>> filter)
         {
-            return await Task<Pipe<R>>.Run(() => pipe.Do(filter));
+            var result = await pipe;
+            return await result.Do(filter);
+        }
+
+        public static async Task<Pipe<R>> Do<T, R>(this Pipe<T> pipe, Func<T, Task<R>> filter)
+        {
+            switch (pipe._PipeValueType)
+            {
+                case PipeValueType.None:
+                    return Pipe<R>.None();
+
+                case PipeValueType.Exception:
+                    return Pipe<R>.With((Exception)pipe);
+
+                default:
+                    try
+                    {
+                        var result = await filter(pipe);
+                        return result != null ? Pipe<R>.With(result) : Pipe<R>.None();
+                    }
+                    catch (Exception e)
+                    {
+                        return Pipe<R>.With(e);
+                    }
+            }
         }
 
         public static Pipe<R> Do<T, R>(this Pipe<T> pipe, Func<T, R> filter)
@@ -40,7 +62,8 @@ namespace PipelineDSL
                 default:
                     try
                     {
-                        return Pipe<R>.With(filter(pipe)) ?? Pipe<R>.None();
+                        var result = filter(pipe);
+                        return result != null ? Pipe<R>.With(result) : Pipe<R>.None();
                     }
                     catch (Exception e)
                     {
@@ -49,13 +72,7 @@ namespace PipelineDSL
             }
         }
 
-        public static async Task<R> AtLast<T, R>(this Task<Pipe<T>> asyncPipedTask, IAmTheFinalPipelineFilter<T, R> finalFilter)
-        {
-            var pipe = await asyncPipedTask;
-            return pipe.AtLast(finalFilter);
-        }
-
-        public static R AtLast<T, R>(this Pipe<T> pipe, IAmTheFinalPipelineFilter<T, R> finalFilter)
+        public static R Finally<T, R>(this Pipe<T> pipe, IAmTheFinalPipelineFilter<T, R> finalFilter)
         {
             switch (pipe._PipeValueType)
             {
@@ -67,6 +84,22 @@ namespace PipelineDSL
 
                 default:
                     return finalFilter.Do((Exception)pipe);
+            }
+        }
+
+        public async static Task<R> Finally<T, R>(this Task<Pipe<T>> pipe, IAmTheFinalPipelineFilter<T, R> finalFilter)
+        {
+            var result = await pipe;
+            switch (result._PipeValueType)
+            {
+                case PipeValueType.None:
+                    return finalFilter.Do();
+
+                case PipeValueType.Value:
+                    return finalFilter.Do((T)result);
+
+                default:
+                    return finalFilter.Do((Exception)result);
             }
         }
 
@@ -82,6 +115,39 @@ namespace PipelineDSL
                 var result = inner(x);
                 outter(result);
                 return result;
+            };
+        }
+
+        public static Func<A, Task<B>> Including<A, B>(this Func<A, Task<B>> inner, Action<B> outter)
+        {
+            return async x =>
+            {
+                var result = await inner(x);
+                outter(result);
+                return result;
+            };
+        }
+        public static Func<T, Task<R>> Retrying<T, R>(this Func<T, Task<R>> fun, NumberTimes up_to)
+        {
+            return async (x) =>
+            {
+                var counter = 0;
+                while (true)
+                {
+                    try
+                    {
+                        var result = await fun(x);
+                        return result;
+                    }
+                    catch (Exception e)
+                    {
+                        counter++;
+                        if (counter >= up_to.Value)
+                        {
+                            throw e;
+                        }
+                    }
+                }
             };
         }
 
